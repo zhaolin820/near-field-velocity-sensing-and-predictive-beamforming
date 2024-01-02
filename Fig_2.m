@@ -56,6 +56,7 @@ figure; box on; hold on;
 plot(vt_all, t_velocity, 'LineWidth', 1.5);
 y = 0:0.2:1;
 plot(vt*ones(1, length(y)), y, '--m', 'LineWidth', 1);
+set(gca,'linewidth',1);
 xlabel('Transverse velocity (m/s)', 'Interpreter','latex');
 ylabel('Normalized $g(\mathbf{Y}, \mbox{\boldmath $\eta$}, \mbox{\boldmath $v$})$', 'Interpreter','latex');
 
@@ -70,6 +71,7 @@ figure; box on; hold on;
 plot(vr_all, r_velocity, 'LineWidth', 1.5);
 y = -1.5:0.2:1;
 plot(vr*ones(1, length(y)), y, '--m', 'LineWidth', 1);
+set(gca,'linewidth',1);
 xlabel('Radial velocity (m/s)', 'Interpreter','latex');
 ylabel('Normalized $g(\mathbf{Y}, \mbox{\boldmath $\eta$}, \mbox{\boldmath $v$})$', 'Interpreter','latex');
 
