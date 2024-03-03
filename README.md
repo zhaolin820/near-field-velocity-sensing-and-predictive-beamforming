@@ -1,8 +1,10 @@
 # Near-Field Velocity Sensing and Predictive Beamforming
 
 The code for the paper 
-**Z. Wang, X. Mu, and Y. Liu, “Near-Field Velocity Sensing and Predictive Beamforming,” *arXiv preprint arXiv:2311.09888*, 2023 [[Arxiv](https://arxiv.org/abs/2311.09888)]
 
+**Z. Wang, X. Mu, and Y. Liu, “Near-Field Velocity Sensing and Predictive Beamforming,” *arXiv preprint arXiv:2311.09888*, 2023** [[Arxiv](https://arxiv.org/abs/2311.09888)]
+
+Abstract: 
 The novel concept of near-field velocity sensing is proposed. In contrast to far-field velocity sensing, near-field velocity sensing enables the simultaneous estimation of both radial and transverse velocities of a moving target. A maximum-
 likelihood-based method is proposed for jointly estimating the radial and transverse velocities from the echo signals. Assisted by near-field velocity sensing, a predictive beamforming framework is proposed for a moving communication user, which requires no channel estimation but achieves seamless data transmission. Finally, numerical examples validate the proposed approaches.
 
