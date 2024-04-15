@@ -1,6 +1,8 @@
 # Near-Field Velocity Sensing and Predictive Beamforming
 
-<span style="color:red">**The updated version of the codes will be released soon.** text</span>
+<span style="color:red">
+The updated version of the codes will be released soon.
+</span>
 
 The code for the paper 
 
