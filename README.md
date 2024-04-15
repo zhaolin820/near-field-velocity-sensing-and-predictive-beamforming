@@ -1,5 +1,7 @@
 # Near-Field Velocity Sensing and Predictive Beamforming
 
+<span style="color:red">**The updated version of the codes will be released soon.** text</span>
+
 The code for the paper 
 
 **Z. Wang, X. Mu, and Y. Liu, “Near-Field Velocity Sensing and Predictive Beamforming,” *arXiv preprint arXiv:2311.09888*, 2023** [[Arxiv](https://arxiv.org/abs/2311.09888)]
