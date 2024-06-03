@@ -1,4 +1,4 @@
-function [X] = match_filter(r, theta, vr, vt, M, N, A, d, lambda, Ts, s)
+function [X, H] = match_filter(r, theta, vr, vt, M, N, d, lambda, Ts,s)
 %matched filter for a specific location and a specific velocity
 %   [X] = match_filter(r, theta, vr, vt, M, N, A, d, lambda, Ts, s)
 %Inputs:
@@ -15,17 +15,19 @@ function [X] = match_filter(r, theta, vr, vt, M, N, A, d, lambda, Ts, s)
 %   s: transmit signal
 %Outputs:
 %   X: matched filter
-%Date: 29/12/2023
+%Date: 03/06/2024
 %Author: Zhaolin Wang
 
-
 X = zeros(M, N);
+n = 1:N;
+[d_n] = velocity_vector(r, theta, M, d, lambda, vr, vt, Ts,n);
+a = array_response(r, theta, M, d, lambda);
+H = a.*d_n;
 for n = 1:N
     s_n = s(:,n);
-    [d_n] = velocity_vector(r, theta, M, d, lambda, vr, vt, Ts,n);
-    D_n = d_n*d_n.';
-    
-    X(:,n) = (A.*D_n)*s_n;
+    hn = H(:,n);
+    Hn = hn*hn.'; 
+    X(:,n) = Hn*s_n;
 end
 
 

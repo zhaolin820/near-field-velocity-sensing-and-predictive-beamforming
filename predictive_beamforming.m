@@ -2,6 +2,7 @@ clc
 clear all
 close all
 
+
 % Predictive beamforming based on the near-field veloity sensing.
 % Runing this script can take a long time.
 % plot Fig. 3, Fig. 4, and Fig. 5.
@@ -12,13 +13,13 @@ Delta = 2e-3; % coherence time (s);
 c = 3e8; % speed of light (m/s)
 f = 28e9; % carrier frequency (Hz)
 lambda = c/f; % signal wavelength (m)
-M = 512; % number of antennas
+M = 256; % number of antennas
 d = lambda/2; % antenna spacing (m)
 B = 100e3; % system bandwidth (Hz)
 Ts = 1/B; % symbol duration (s)
 D = M*d; % array apearture (m)
 N = floor(Delta/Ts); % coherence period interval
-Pt = 10^(10/10); % transmit power (mW)
+Pt = 10^(-10/10); % transmit power (mW)
 N0 = 10^(-174/10)*B; % noise power (mW)
 SNR = Pt*lambda^2/((4*pi)^3*N0); % signal-to-noise ratio
 
@@ -45,7 +46,7 @@ r_predicted_all = zeros(1, length(t)); theta_predicted_all = zeros(1, length(t))
 vr_estimated_all = zeros(1, length(t)); vt_estimated_all = zeros(1, length(t));
 R_all = zeros(length(t), 1);
 R_optimal_all = zeros(1, length(t));
-
+options = optimoptions(@fminunc, 'Display','iter-detailed', HessianApproximation="lbfgs", SpecifyObjectiveGradient=true);
 
 r_predicted = r(2); theta_predicted = theta(2); vr_estimated = vr(1); vt_estimated = vt(1);
 for l = 2:(length(t)-1)
@@ -55,26 +56,29 @@ for l = 2:(length(t)-1)
 
 
     % predicted beamforming
-    D_predicted = velocity_matrix(r_predicted, theta_predicted, M, d, lambda, vr_estimated, vt_estimated, Ts, N);
-    a_predicted = beamfocusing(r_predicted, theta_predicted, M, d, lambda);
-    w_predicted = diag(conj(a_predicted))*conj(D_predicted)* sqrt(SNR)/sqrt(M);
+    D_predicted = velocity_vector(r_predicted, theta_predicted, M, d, lambda, vr_estimated, vt_estimated, Ts, 1:N);
+    a_predicted = array_response(r_predicted, theta_predicted, M, d, lambda);
+    w_predicted = diag(conj(a_predicted))*conj(D_predicted);
+    w_predicted = w_predicted*sqrt(SNR)./vecnorm(w_predicted);
     
     % optimal beamforming
-    D_optimal= velocity_matrix(r(l), theta(l), M, d, lambda, vr(l), vt(l), Ts, N);
-    a_optimal = beamfocusing(r(l), theta(l), M, d, lambda);
-    w_optimal = diag(conj(a_optimal))*conj(D_optimal)* sqrt(SNR)/sqrt(M);
+    D_optimal= velocity_vector(r(l), theta(l), M, d, lambda, vr(l), vt(l), Ts, 1:N);
+    a_optimal = array_response(r(l), theta(l), M, d, lambda);
+    w_optimal = diag(conj(a_optimal))*conj(D_optimal);
+    w_optimal = w_optimal*sqrt(SNR)./vecnorm(w_optimal);
     
     % transmit signal
     s = 1/sqrt(2) * w_predicted .* (randn(1,N) + 1i * randn(1,N));
-    
+
+
     % echo signal and communication rate
     R = 0; R_optimal = 0;
     Y = zeros(M, N);
-    a = beamfocusing(r(l), theta(l), M, d, lambda); A = a*a.';  
-    D = velocity_matrix(r(l), theta(l), M, d, lambda, vr(l), vt(l), Ts, N);
+    a = array_response(r(l), theta(l), M, d, lambda); A = a*a.';  
+    D = velocity_vector(r(l), theta(l), M, d, lambda, vr(l), vt(l), Ts, 1:N);
     for n = 1:N
         d_n = D(:,n);
-
+        
         % echo signal
         s_n = s(:,n);
         D_n = d_n*d_n.'; 
@@ -91,11 +95,7 @@ for l = 2:(length(t)-1)
 
     % velocity sensing
     v0 = [vr_estimated; vt_estimated];
-
-    options = optimoptions(@fminunc, 'Display','iter-detailed', 'HessianApproximation', 'lbfgs', 'SpecifyObjectiveGradient',true);
-    v = fminunc(@(eta)(loss_function(eta, r_predicted, theta_predicted, Y, M, N, A, d, lambda, Ts,s)),v0,options);
-    % options = optimoptions(@fminunc, 'Display','iter-detailed', 'HessianApproximation', 'lbfgs');
-    % v = fminunc(@(eta)(loss_function(eta, r_predicted, theta_predicted, Y, M, N, A, d, lambda, Ts,s)),v0,options);
+    v = fminunc(@(eta)(loss_function(Y, r_predicted, theta_predicted, eta, M, N, d, lambda, Ts, s)),v0,options);
     
     vr_estimated = v(1); 
     vt_estimated = v(2);
@@ -104,8 +104,8 @@ for l = 2:(length(t)-1)
     theta_predicted = theta_predicted + vt_estimated/r_predicted * Delta;
     r_predicted = r_predicted + vr_estimated*Delta;
 
-   
     
+
     vr_estimated_all(l) = vr_estimated;
     vt_estimated_all(l) = vt_estimated;
     R_all(l) = R; R_optimal_all(l) = R_optimal;
@@ -121,8 +121,8 @@ set(gca,'linewidth',1);
 legend('Radial velocity, ground-truth', 'Radial velocity, estimated', 'Interpreter','latex');
 
 figure; box on; hold on;
-plot(t(2:end-1)*1e3, vt(2:end-1));
-plot(t(2:end-1)*1e3, vt_estimated_all(2:end-1));
+plot(t(2:end-1)*1e3, vt(2:end-1), 'LineWidth', 1.5);
+plot(t(2:end-1)*1e3, vt_estimated_all(2:end-1), 'LineWidth', 1.5);
 ylabel('Transverse velocity (m/s)', 'Interpreter','latex');
 xlabel('Time (ms)', 'Interpreter','latex');
 set(gca,'linewidth',1);
@@ -130,18 +130,65 @@ legend('Transverse velocity, ground-truth', 'Transverse velocity, estimated', 'I
 
 figure; box on; hold on
 [X_real, Y_real] = pol2cart(theta, r);
-plot(X_real,Y_real, 'LineWidth', 1);
+plot(X_real,Y_real, 'LineWidth', 1.5);
 [X_predicted, Y_predicted] = pol2cart(theta_predicted_all, r_predicted_all);
-plot(X_predicted(2:end-1),Y_predicted(2:end-1), 'LineWidth', 1);
+plot(X_predicted(2:end-1),Y_predicted(2:end-1), 'LineWidth', 1.5);
 set(gca,'linewidth',1);
 xlabel('$x$-axis (m)', 'Interpreter','latex');
 ylabel('$y$-axis (m)', 'Interpreter','latex');
 legend('Ground-truth trajectory', 'Predicted trajectory', 'Interpreter','latex');
 
 figure; box on; hold on;
-plot(t(2:end-1)*1e3, R_optimal_all(2:end-1));
-plot(t(2:end-1)*1e3, R_all(2:end-1));
+plot(t(2:end-1)*1e3, R_optimal_all(2:end-1), 'LineWidth', 1.5);
+plot(t(2:end-1)*1e3, R_all(2:end-1), 'LineWidth', 1.5);
 ylabel('Achievable rate (bit/s/Hz)', 'Interpreter','latex');
 xlabel('Time (ms)', 'Interpreter','latex');
 set(gca,'linewidth',1);
 legend('Optimal', 'Proposed', 'Interpreter','latex');
+
+
+
+function [f, g] = loss_function(Y, r, theta, eta, M, N, d, lambda, Ts, s)
+
+    vr = eta(1); vt = eta(2);
+    delta_m = (-(M-1)/2 : (M-1)/2)' * d;
+    r_m = sqrt(r^2 + delta_m.^2 - 2*r*delta_m*cos(theta));
+    X = match_filter(r, theta, vr, vt, M, N, d, lambda, Ts, s);
+
+    f = -abs(trace(X'*Y))^2/real(trace(X*X'));   
+    
+    if nargout > 1 % gradient required
+        n = 1:N;
+        [d_n] = velocity_vector(r, theta, M, d, lambda, vr, vt, Ts,n);
+        qm = (r - delta_m*cos(theta))./r_m;
+        pm = delta_m*sin(theta)./r_m;
+        
+        d_vr = -1i*2*pi/lambda*Ts*qm*n .* d_n;
+        d_vt = -1i*2*pi/lambda*Ts*pm*n .* d_n;
+        a = array_response(r, theta, M, d, lambda);
+        
+        H = a.*d_n;
+        H_vr = a.*d_vr;
+        H_vt = a.*d_vt;
+        
+        X_vr = zeros(M, N); X_vt = zeros(M, N);
+        for n = 1:N
+            
+            hn = H(:,n);
+            hn_vr = H_vr(:,n);
+            hn_vt = H_vt(:,n);
+            X_vr(:,n) = ( 2* hn_vr*hn.' ) * s(:,n);
+            X_vt(:,n) = ( 2* hn_vt*hn.' ) * s(:,n);
+        end
+        
+        
+        X_norm = norm(X,"fro")^2;
+        Theta = trace(Y*X')*X_norm;
+        Omega = abs(trace(Y*X'))^2;
+        g_X = (Theta*Y' - Omega*X')/X_norm^2;
+        
+        g = zeros(2,1);
+        g(1) = -2*real(trace(g_X*X_vr));
+        g(2) = -2*real(trace(g_X*X_vt));
+    end
+end

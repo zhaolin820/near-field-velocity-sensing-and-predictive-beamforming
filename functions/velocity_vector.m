@@ -1,4 +1,4 @@
-function [d, v_m] = velocity_vector(r, theta, M, d, lambda, vr, vt, Ts, n)
+function [d, v_m] = velocity_vector(r, theta, M, d, lambda, vr, vt, Ts,n)
 %calculating the near-field doppler-frequency vector at time index n
 %   [d, v_m] = velocity_vector(r, theta, M, d, lambda, vr, vt, Ts, n)
 %Inputs:
@@ -9,7 +9,7 @@ function [d, v_m] = velocity_vector(r, theta, M, d, lambda, vr, vt, Ts, n)
 %   lambda: signal wavelength
 %   vr: radial velocity of the target
 %   vt: transverse velocity of the target
-%   T_s: symbol period
+%   Ts: symbol period
 %   n: time index
 %Outputs:
 %   d: doppler-frequenct vector
@@ -29,6 +29,4 @@ v_m = vr_m + vt_m;
 % Doppler frequency vector
 d = exp( -1i * 2 * pi /lambda * v_m*n*Ts );
 
-
 end
-
