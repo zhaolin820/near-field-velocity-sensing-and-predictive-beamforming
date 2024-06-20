@@ -5,6 +5,7 @@ close all
 % Estimating the radial and trasnverse velocities based on maximum
 % likelihood estimation and quasi-Newton method
 
+addpath("functions/");
 %% system parameter
 Delta = 2e-3; % coherence time (s);
 c = 3e8; % speed of light (m/s)
