@@ -46,8 +46,8 @@ if nargout > 1 % gradient required
         hn = H(:,n);
         hn_vr = H_vr(:,n);
         hn_vt = H_vt(:,n);
-        X_vr(:,n) = ( 2* hn_vr*hn.' ) * s(:,n);
-        X_vt(:,n) = ( 2* hn_vt*hn.' ) * s(:,n);
+        X_vr(:,n) = ( hn_vr*hn.' + hn*hn_vr.' ) * s(:,n);
+        X_vt(:,n) = ( hn_vt*hn.' + hn*hn_vt.' ) * s(:,n);
     end
     
     
