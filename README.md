@@ -2,7 +2,7 @@
 
 The code for the paper 
 
-**Z. Wang, X. Mu, and Y. Liu, “Near-Field Velocity Sensing and Predictive Beamforming,” *arXiv preprint arXiv:2311.09888*, 2023** [[Arxiv](https://arxiv.org/abs/2311.09888)]
+**Z. Wang, X. Mu, and Y. Liu, “Near-Field Velocity Sensing and Predictive Beamforming,” *arXiv preprint arXiv:2311.09888*, 2023** [[Arxiv](https://arxiv.org/abs/2311.09888)] [[IEEE](https://ieeexplore.ieee.org/abstract/document/10664591)]
 
 Abstract: 
 The novel concept of near-field velocity sensing is proposed. In contrast to far-field velocity sensing, near-field velocity sensing enables the simultaneous estimation of both radial and transverse velocities of a moving target. A maximum-
@@ -35,10 +35,10 @@ Run `predictive_beamforming.m` for plotting Fig. 3, Fig. 4, and Fig. 5 in this p
 ## Citing
 If you in any way use this code for research, please cite our original article listed above. The corresponding BiBTeX citation is given below:
 ```
-@article{wang2023near,
+@article{wang2023near_velocity,
   title={Near-Field Velocity Sensing and Predictive Beamforming},
   author={Wang, Zhaolin and Mu, Xidong and Liu, Yuanwei},
-  journal={arXiv preprint arXiv:2311.09888},
-  year={2023}
+  journal={IEEE Transactions on Vehicular Technology}, 
+  year={2024}
 }
 ```
