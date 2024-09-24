@@ -47,13 +47,13 @@ vr_estimated_all = zeros(1, length(t)); vt_estimated_all = zeros(1, length(t));
 R_all = zeros(length(t), 1);
 R_optimal_all = zeros(1, length(t));
 options = optimoptions(@fminunc, 'Display','iter-detailed', HessianApproximation="lbfgs", SpecifyObjectiveGradient=true);
-
 r_predicted = r(2); theta_predicted = theta(2); vr_estimated = vr(1); vt_estimated = vt(1);
+
+hw = waitbar(0,'Running Predictive Beamforming ...');
 for l = 2:(length(t)-1)
     disp(['******************** CPI - ' num2str(l) ' ********************']);
     r_predicted_all(l) = r_predicted;
     theta_predicted_all(l) = theta_predicted;
-
 
     % predicted beamforming
     D_predicted = velocity_vector(r_predicted, theta_predicted, M, d, lambda, vr_estimated, vt_estimated, Ts, 1:N);
@@ -109,12 +109,14 @@ for l = 2:(length(t)-1)
     vr_estimated_all(l) = vr_estimated;
     vt_estimated_all(l) = vt_estimated;
     R_all(l) = R; R_optimal_all(l) = R_optimal;
-end
 
+    waitbar((l-1)/(length(t)-1),hw);
+end
+close(hw);
 
 figure; box on; hold on;
-plot(t(2:end-1)*1e3, vr(2:end-1));
-plot(t(2:end-1)*1e3, vr_estimated_all(2:end-1));
+plot(t(2:end-1)*1e3, vr(2:end-1), 'LineWidth', 1.5);
+plot(t(2:end-1)*1e3, vr_estimated_all(2:end-1), '--', 'LineWidth', 1.5);
 ylabel('Radial velocity (m/s)', 'Interpreter','latex');
 xlabel('Time (ms)', 'Interpreter','latex');
 set(gca,'linewidth',1);
@@ -122,7 +124,7 @@ legend('Radial velocity, ground-truth', 'Radial velocity, estimated', 'Interpret
 
 figure; box on; hold on;
 plot(t(2:end-1)*1e3, vt(2:end-1), 'LineWidth', 1.5);
-plot(t(2:end-1)*1e3, vt_estimated_all(2:end-1), 'LineWidth', 1.5);
+plot(t(2:end-1)*1e3, vt_estimated_all(2:end-1), '--', 'LineWidth', 1.5);
 ylabel('Transverse velocity (m/s)', 'Interpreter','latex');
 xlabel('Time (ms)', 'Interpreter','latex');
 set(gca,'linewidth',1);
@@ -132,7 +134,7 @@ figure; box on; hold on
 [X_real, Y_real] = pol2cart(theta, r);
 plot(X_real,Y_real, 'LineWidth', 1.5);
 [X_predicted, Y_predicted] = pol2cart(theta_predicted_all, r_predicted_all);
-plot(X_predicted(2:end-1),Y_predicted(2:end-1), 'LineWidth', 1.5);
+plot(X_predicted(2:end-1),Y_predicted(2:end-1), '--', 'LineWidth', 1.5);
 set(gca,'linewidth',1);
 xlabel('$x$-axis (m)', 'Interpreter','latex');
 ylabel('$y$-axis (m)', 'Interpreter','latex');
@@ -140,55 +142,9 @@ legend('Ground-truth trajectory', 'Predicted trajectory', 'Interpreter','latex')
 
 figure; box on; hold on;
 plot(t(2:end-1)*1e3, R_optimal_all(2:end-1), 'LineWidth', 1.5);
-plot(t(2:end-1)*1e3, R_all(2:end-1), 'LineWidth', 1.5);
+plot(t(2:end-1)*1e3, R_all(2:end-1), '--', 'LineWidth', 1.5);
 ylabel('Achievable rate (bit/s/Hz)', 'Interpreter','latex');
 xlabel('Time (ms)', 'Interpreter','latex');
 set(gca,'linewidth',1);
 legend('Optimal', 'Proposed', 'Interpreter','latex');
 
-
-
-function [f, g] = loss_function(Y, r, theta, eta, M, N, d, lambda, Ts, s)
-
-    vr = eta(1); vt = eta(2);
-    delta_m = (-(M-1)/2 : (M-1)/2)' * d;
-    r_m = sqrt(r^2 + delta_m.^2 - 2*r*delta_m*cos(theta));
-    X = match_filter(r, theta, vr, vt, M, N, d, lambda, Ts, s);
-
-    f = -abs(trace(X'*Y))^2/real(trace(X*X'));   
-    
-    if nargout > 1 % gradient required
-        n = 1:N;
-        [d_n] = velocity_vector(r, theta, M, d, lambda, vr, vt, Ts,n);
-        qm = (r - delta_m*cos(theta))./r_m;
-        pm = delta_m*sin(theta)./r_m;
-        
-        d_vr = -1i*2*pi/lambda*Ts*qm*n .* d_n;
-        d_vt = -1i*2*pi/lambda*Ts*pm*n .* d_n;
-        a = array_response(r, theta, M, d, lambda);
-        
-        H = a.*d_n;
-        H_vr = a.*d_vr;
-        H_vt = a.*d_vt;
-        
-        X_vr = zeros(M, N); X_vt = zeros(M, N);
-        for n = 1:N
-            
-            hn = H(:,n);
-            hn_vr = H_vr(:,n);
-            hn_vt = H_vt(:,n);
-            X_vr(:,n) = ( 2* hn_vr*hn.' ) * s(:,n);
-            X_vt(:,n) = ( 2* hn_vt*hn.' ) * s(:,n);
-        end
-        
-        
-        X_norm = norm(X,"fro")^2;
-        Theta = trace(Y*X')*X_norm;
-        Omega = abs(trace(Y*X'))^2;
-        g_X = (Theta*Y' - Omega*X')/X_norm^2;
-        
-        g = zeros(2,1);
-        g(1) = -2*real(trace(g_X*X_vr));
-        g(2) = -2*real(trace(g_X*X_vt));
-    end
-end
