@@ -61,38 +61,4 @@ if nargout > 1 % gradient required
     g(2) = -2*real(trace(g_X*X_vt));
 end
 
-% if nargout > 1 % gradient required
-%     n = 1:N;
-%     [d_n] = velocity_vector(r, theta, M, d, lambda, vr, vt, Ts,n);
-%     qm = (r - delta_m*cos(theta))./r_m;
-%     pm = delta_m*sin(theta)./r_m;
-% 
-%     d_vr = -1i*2*pi/lambda*Ts*qm*n .* d_n;
-%     d_vt = -1i*2*pi/lambda*Ts*pm*n .* d_n;
-%     a = array_response(r, theta, M, d, lambda);
-% 
-%     H = a.*d_n;
-%     H_vr = a.*d_vr;
-%     H_vt = a.*d_vt;
-% 
-%     X_vr = zeros(M, N); X_vt = zeros(M, N);
-%     for n = 1:N
-% 
-%         hn = H(:,n);
-%         hn_vr = H_vr(:,n);
-%         hn_vt = H_vt(:,n);
-%         X_vr(:,n) = ( 2* hn_vr*hn.' ) * s(:,n);
-%         X_vt(:,n) = ( 2* hn_vt*hn.' ) * s(:,n);
-%     end
-% 
-% 
-%     X_norm = norm(X,"fro")^2;
-%     Theta = trace(Y*X')*X_norm;
-%     Omega = abs(trace(Y*X'))^2;
-%     g_X = (Theta*Y' - Omega*X')/X_norm^2;
-% 
-%     g = zeros(2,1);
-%     g(1) = -2*real(trace(g_X*X_vr));
-%     g(2) = -2*real(trace(g_X*X_vt));
-% end
 end
