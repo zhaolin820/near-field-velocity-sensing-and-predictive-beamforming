@@ -39,6 +39,10 @@ If you in any way use this code for research, please cite our original article l
   title={Near-Field Velocity Sensing and Predictive Beamforming},
   author={Wang, Zhaolin and Mu, Xidong and Liu, Yuanwei},
   journal={IEEE Transactions on Vehicular Technology}, 
-  year={2024}
+  year={2025},
+  month=jan,
+  volume={74},
+  number={1},
+  pages={1806-1810}
 }
 ```
